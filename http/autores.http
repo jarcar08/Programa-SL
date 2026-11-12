@@ -1,0 +1,30 @@
+@api=http://localhost:3000/api
+
+### 200 - Listar (ordenado)
+GET  {{api}}/autores
+
+### 200 - buscar por nombres o apellidos
+GET {{api}}/autores?q=mart
+
+### 200 - Obtener un autor
+GET {{ api }}/autores/1
+
+### 201 - Crear
+# @name nuevoAutor
+POST {{ api }}/autores
+Content-Type: application/json
+{
+    "nombres":"Kent",
+    "apellidos": "Romero",
+    "nacionalidad":"Peruano"
+}
+
+### 200 - Actualizar parcialmente el autor creado
+PUT {{api}}/autores/{{nuevoAutor.response.body.id}}
+Content-Type:  :application/json
+{
+    "nacionalidad":"Norteamericano"
+}
+
+### 200 - Eliminar el autor creado
+DELETE {{api}}/autores/{{nuevoAutor.response.body.id}}

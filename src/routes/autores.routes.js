@@ -8,7 +8,6 @@ router.get('/:id',validarId, controller.obtener);
 router.post('/', controller.crear);
 router.put('/:id', validarId, controller.actualizar);
 router.delete('/:id', validarId, controller.eliminar);
-
 export default router;
 
 

@@ -1,36 +1,55 @@
-src/services/categorias.service.js
 import * as repo from '../repositories/categorias.repository.js';
-import { noEncontrado, solicitudInvalida, conflicto } from '../utils/http-error.js';
-export const listar = () => repo.listar();
+import { noEncontrado, solicitudInvalida} from '../utils/http-error.js';
+const CAMPOS=['nombre', 'descripcion'];
+const soloCampos = (d) =>Object.fromEntries(Object.entries(d).filter(([k])=>CAMPOS.includes(k)));
+
+// function validar(d, parcial = false){
+//     const errores = [];
+//     if((!parcial || d.nombre!==undefined) && !d.nombre?.trim())
+//         errores.push("El campo nombres es obligatorio");
+//     if((!parcial || d.descripcion!==undefined) && !d.descripcion?.trim())
+//         errores.push("El campo apellidos es obligatorio");
+// }
+
+function validar(d, parcial = false){
+    if (!d || typeof d !== 'object') {
+        throw solicitudInvalida('El cuerpo de la petición es inválido o está vacío');
+    }
+
+    const errores = [];
+    if((!parcial || d.nombre!==undefined) && !d.nombre?.trim()){
+        errores.push("El campo nombre es obligatorio");
+    }
+    if((!parcial || d.descripcion!==undefined) && !d.descripcion?.trim()){
+        errores.push("La descripción es obligatorio");
+    }
+     if (errores.length > 0) {
+        throw solicitudInvalida('Error de validación en los datos de categoria', errores);
+    }
+
+}
+
+export const listar = (filtro) => repo.listar(filtro);
+
 export async function obtener(id) {
-  const c = await repo.buscarPorId(id);
-  if (!c) throw noEncontrado('Categoría');
-  return c;
+  const categoria = await repo.buscarPorId(id);
+  if (!categoria) throw noEncontrado('Categoría');
+  return categoria;
 }
-export async function crear({ nombre, descripcion }) {
-  if (!nombre?.trim()) throw solicitudInvalida('nombre es obligatorio');
-  if (await repo.buscarPorNombre(nombre.trim()))
-    throw conflicto('La categoría ya existe');
-  return repo.crear({ nombre: nombre.trim(), descripcion: descripcion ?? null });
+
+export async function crear(body) {
+    validar(body);
+    return repo.crear(soloCampos(body));
 }
-export async function actualizar(id, { nombre, descripcion }) {
-  await obtener(id);
-  const datos = {};
-  if (nombre !== undefined) {
-    if (!nombre.trim()) throw solicitudInvalida('nombre no puede estar vacío');
-    const otra = await repo.buscarPorNombre(nombre.trim());
-    if (otra && otra.id !== id) throw conflicto('La categoría ya existe');
-    datos.nombre = nombre.trim();
-  }
-  if (descripcion !== undefined) datos.descripcion = descripcion;
-  return repo.actualizar(id, datos);
+
+export async function actualizar(id, body) {
+    await obtener(id);
+    validar(body, true);
+    return repo.actualizar(id, soloCampos(body));
 }
 
 export async function eliminar(id) {
-  await obtener(id);
-  if ((await repo.contarLibros(id)) > 0) {
-    throw conflicto('No se puede eliminar: la categoría tiene libros asociados');
-  }
-  await repo.eliminar(id);
+    await obtener(id);
+    return repo.eliminar(id);
 }
 

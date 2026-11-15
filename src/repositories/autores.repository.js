@@ -28,6 +28,5 @@ export async function actualizar(id, datos) {
 }
 
 export async function eliminar(id) {
-    return (await Autor.destroy({where:{id}}))> 0;
-    
+    return (await Autor.destroy({where:{id}}))> 0; 
 }

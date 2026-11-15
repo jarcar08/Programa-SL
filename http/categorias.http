@@ -1,0 +1,31 @@
+@api=http://localhost:3000/api
+
+### 200 - Listar (ordenado)
+GET  {{api}}/categorias
+
+### 200 - buscar por nombre o descripcion
+GET {{api}}/categorias?q=Datos
+
+### 200 - Obtener una categoria
+GET {{api}}/categorias/3
+
+### 201 - Crear
+# @name nuevaCategoria
+POST {{api}}/categorias
+Content-Type: application/json
+
+{
+    "nombre":"Taller de Desarrollo",
+    "descripcion": "Desarrollo web, móvil, inteligencia artificial, etc"
+}
+
+### 200 - Actualizar parcialmente la categoria creado
+PUT {{api}}/categorias/{{nuevaCategoria.response.body.id}}
+Content-Type: application/json
+
+{
+    "descripcion":"Desarrollo web, móvil, inteligencia artificial"
+}
+
+### 204 - Eliminar la categoria creado
+DELETE {{api}}/categorias/{{nuevaCategoria.response.body.id}}

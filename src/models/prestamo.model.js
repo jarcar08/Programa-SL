@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
-
 export const Prestamo = sequelize.define(
     'Prestamo', 
     {
@@ -8,7 +7,6 @@ export const Prestamo = sequelize.define(
             primaryKey:true, 
             autoIncrement:true
             },
-
 
             socio_id:{
                 type:DataTypes.INTEGER,
@@ -21,23 +19,12 @@ export const Prestamo = sequelize.define(
              },
 
             fecha_prestamo:{
-                type:DataTypes.DATE,
+                type:DataTypes.DATEONLY,
                 allowNull:false,
-                validate:{
-                notNull:{msg:'El fecha de prestamo es obligatoria'},
-                isDate:{msg:'Debe ser una fecha válida'},
-
-                isAfter:{
-                    args:['1450-01-01'],
-                    msg:'la fecha no puede ser tan antigua'
-
-                },
-    
-                 isBefore: {
-                        args:[new Date().toISOString()],
-                        msg:'La fecha no puede ser mayor a la fecha actual'    
-                    }, 
-                }
+                // validate:{
+                //     notNull:{msg:'la fecha de prestamo es obligatoria'},
+                //     isDate:{msg:'Debe ser una fecha válida'},
+                // }
                 },
 
                 fecha_limite:{

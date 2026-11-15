@@ -1,9 +1,14 @@
-src/services/socios.service.js
 import * as repo from '../repositories/socios.repository.js';
-import { noEncontrado, solicitudInvalida, conflicto } from '../utils/http-error.js';
+import { noEncontrado, solicitudInvalida} from '../utils/http-error.js';
 const TIPOS = ['ESTUDIANTE', 'DOCENTE', 'ADMINISTRATIVO'];
 const CAMPOS = ['dni', 'nombres', 'apellidos', 'email', 'telefono', 'tipo', 'activo'];
+const soloCampos = (d) =>Object.fromEntries(Object.entries(d).filter(([k])=>CAMPOS.includes(k)));
+
 function validar(d, parcial = false) {
+   if (!d || typeof d !== 'object') {
+        throw solicitudInvalida('El cuerpo de la petición es inválido o está vacío');
+    }
+
   const errores = [];
   if ((!parcial || d.dni !== undefined) && !/^\d{8}$/.test(d.dni ?? ''))
     errores.push('dni debe tener 8 dígitos');
@@ -15,10 +20,10 @@ function validar(d, parcial = false) {
     errores.push('email no es válido');
   if (d.tipo !== undefined && !TIPOS.includes(d.tipo))
     errores.push(`tipo debe ser ${TIPOS.join(', ')}`);
-  if (errores.length) throw solicitudInvalida('Datos de socio no válidos', errores);
+  if (errores.length>0) throw solicitudInvalida('Datos de socio no válidos', errores);
 }
-const soloCampos = (d) =>
-  Object.fromEntries(Object.entries(d).filter(([k]) => CAMPOS.includes(k)));
+
+
 async function verificarUnicos(datos, id = null) {
   for (const campo of ['dni', 'email']) {
     if (datos[campo] === undefined) continue;
@@ -27,11 +32,14 @@ async function verificarUnicos(datos, id = null) {
       throw conflicto(`Ya existe un socio con ese ${campo}`);
  }
 }
-export const listar = () => repo.listar();
+
+
+export const listar = (filtro) => repo.listar(filtro);
+
 export async function obtener(id) {
-  const s = await repo.buscarPorId(id);
-  if (!s) throw noEncontrado('Socio');
-  return s;
+  const socio = await repo.buscarPorId(id);
+  if (!socio) throw noEncontrado('Socio');
+  return socio;
 }
 export async function crear(body) {
   validar(body);

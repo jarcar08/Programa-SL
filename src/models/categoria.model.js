@@ -11,7 +11,6 @@ export const Categoria = sequelize.define(
             nombre:{
                 type:DataTypes.STRING(80),
                 allowNull:false,
-                unique:true,
                 validate:{
                     notNull:{msg: 'el nombre es obligatorio'},
                     notEmpty:{msg: 'el nombre no puede estar vacio'}

@@ -6,6 +6,7 @@ try {
     console.log(`MySql Conectado: ${info.db} como ${info.usuario}`);
 } catch (err) {
     console.error(`No se pudo conectar a MySql`);
+    console.error(err.code, err.message);
 }
 
 app.listen(env.port,()=>{

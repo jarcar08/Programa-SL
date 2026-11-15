@@ -1,37 +1,45 @@
-src/repositories/socios.repository.js
-import { socios } from '../data/datos.js';
-import { siguienteId } from '../utils/ids.js';
-export async function listar() {
-  return structuredClone(socios);
+import { Op } from 'sequelize';
+import { Socio } from '../models/index.js';
+import { plano } from '../utils/plano.js';
+
+export async function listar({q}={}) {
+    const where = q ?{
+        [Op.or]:[
+            {nombres:{[Op.like]:`%${q}%`}},
+            {apellidos:{[Op.like]:`%${q}%`}},
+        ]
+    }:{};
+
+    return(await Socio.findAll({where, order:[['apellidos','ASC']]})).map(plano)
 }
+
 export async function buscarPorId(id) {
-  const s = socios.find((x) => x.id === id);
-  return s ? structuredClone(s) : null;
+    return plano(await Socio.findByPk(id));
 }
-export async function buscarPorCampo(campo, valor) {
-  const s = socios.find((x) => x[campo] === valor);
-  return s ? structuredClone(s) : null;
-}
+
 export async function crear(datos) {
-  const nuevo = {
-    id: siguienteId(socios),
-    ...datos,
-    telefono: datos.telefono ?? null,
-    tipo: datos.tipo ?? 'ESTUDIANTE',
-    activo: datos.activo ?? true
-  };
-  socios.push(nuevo);
-  return structuredClone(nuevo);
+    return plano(await Socio.create(datos));
 }
+
+export async function buscarPorCampo(campo, valor, excluirId = null) {
+    const where = { [campo]: valor };
+
+    // Si estás actualizando un registro, excluye su propio ID de la búsqueda
+    if (excluirId) {
+        where.id = { [Op.ne]: excluirId };
+    }
+
+    const registro = await Socio.findOne({ where });
+    return registro ? plano(registro) : null;
+}
+
+
 export async function actualizar(id, datos) {
-  const s = socios.find((x) => x.id === id);
-  if (!s) return null;
-  Object.assign(s, datos);
-  return structuredClone(s);
+    const socio = await Socio.findByPk(id);
+    if(!socio) return null;
+    return plano(await socio.update(datos));
 }
+
 export async function eliminar(id) {
-  const i = socios.findIndex((x) => x.id === id);
-  if (i === -1) return false;
-  socios.splice(i, 1);
-  return true;
+    return (await Socio.destroy({where:{id}}))> 0; 
 }

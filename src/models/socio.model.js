@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
-
 export const Socio = sequelize.define(
     'Socio', 
     {
@@ -8,8 +7,6 @@ export const Socio = sequelize.define(
             primaryKey:true, 
             autoIncrement:true
             },
-
-
             dni:{
                 type:DataTypes.CHAR(8),
                 allowNull:false,

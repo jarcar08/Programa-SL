@@ -1,38 +1,35 @@
-src/repositories/categorias.repository.js
-import { categorias, libros } from '../data/datos.js';
-import { siguienteId } from '../utils/ids.js';
-export async function listar() {
-  return structuredClone(categorias);
+import {Op} from 'sequelize';
+import {Categoria} from '../models/index.js';
+import { plano } from '../utils/plano.js';
+
+export async function listar({q}={}) {
+    const where = q ?{
+        [Op.or]:[
+            {nombre:{[Op.like]:`%${q}%`}},
+        ]
+    }:{};
+    return(await Categoria.findAll({where, order:[['nombre','ASC']]})).map(plano)
 }
+
+// export async function contarLibros(id) {
+//   return libros.filter((l) => l.categoria_id === id).length;
+// }
+
 export async function buscarPorId(id) {
-  const c = categorias.find((x) => x.id === id);
-  return c ? structuredClone(c) : null;
+    return plano(await Categoria.findByPk(id));
 }
-export async function buscarPorNombre(nombre) {
-  const c = categorias.find((x) => x.nombre.toLowerCase() === nombre.toLowerCase());
-  return c ? structuredClone(c) : null;
-}
-export async function contarLibros(id) {
-  return libros.filter((l) => l.categoria_id === id).length;
-}
+
 export async function crear(datos) {
-  const nueva = {
-    id: siguienteId(categorias),
-    ...datos,
-    descripcion: datos.descripcion ?? null
-  };
-  categorias.push(nueva);
-  return structuredClone(nueva);
+    return plano(await Categoria.create(datos));
 }
+
 export async function actualizar(id, datos) {
-  const c = categorias.find((x) => x.id === id);
-  if (!c) return null;
-  Object.assign(c, datos);
-  return structuredClone(c);
+    const categoria = await Categoria.findByPk(id);
+    if(!categoria) return null;
+    return plano(await categoria.update(datos));
 }
+
 export async function eliminar(id) {
-  const i = categorias.findIndex((x) => x.id === id);
-  if (i === -1) return false;
-  categorias.splice(i, 1);
-  return true;
+    return (await Categoria.destroy({where:{id}}))> 0;
+    
 }

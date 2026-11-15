@@ -1,10 +1,7 @@
-src/services/libros.service.js
-// CAPA DE NEGOCIO (servicio)
-// Aplica las reglas de la biblioteca. No conoce Express (req/res)
-// ni sabe si los datos vienen de un array o de MySQL.
-import * as librosRepo from '../repositories/libros.repository.js';
+import * as repo from '../repositories/libros.repository.js';
 import * as categoriasRepo from '../repositories/categorias.repository.js';
-import { noEncontrado, solicitudInvalida, conflicto } from '../utils/http-error.js';
+import { noEncontrado, solicitudInvalida, conflicto} from '../utils/http-error.js';
+
 const ISBN_REGEX = /^(97[89])-?\d{10}$/;
 const CAMPOS = [
   'isbn',
@@ -14,6 +11,8 @@ const CAMPOS = [
   'stock_total',
   'stock_disponible'
 ];
+const soloCampos = (datos) =>Object.fromEntries(Object.entries(datos).filter(([k])=>CAMPOS.includes(k)));
+
 function validar(datos, { parcial = false } = {}) {
   const errores = [];
   if (!parcial || datos.isbn !== undefined) {
@@ -33,8 +32,10 @@ function validar(datos, { parcial = false } = {}) {
     if (!Number.isInteger(Number(datos.categoria_id)))
       errores.push('categoria_id es obligatorio');
   }
-  if (errores.length) throw solicitudInvalida('Datos de libro no válidos', errores);
-}
+  if (errores.length>0) {
+    throw solicitudInvalida('Datos de libro no válidos', errores);
+}}
+
 // Misma regla que el CHECK ck_libros_stock de MySQL
 function validarStock(total, disponible) {
   if (total < 0 || disponible < 0 || disponible > total) {
@@ -43,14 +44,11 @@ function validarStock(total, disponible) {
     );
   }
 }
-function soloCampos(datos) {
-  return Object.fromEntries(
-    Object.entries(datos).filter(([k]) => CAMPOS.includes(k))
-  );
-}
-export const listar = (filtros) => librosRepo.listar(filtros);
+
+export const listar = (filtro) =>repo.listar(filtro);
+
 export async function obtener(id) {
-  const libro = await librosRepo.buscarPorId(id);
+  const libro = await repo.buscarPorId(id);
   if (!libro) throw noEncontrado('Libro'); // 404
   return libro;
 }
@@ -63,15 +61,16 @@ function normalizar(body) {
   datos.anio = datos.anio ? Number(datos.anio) : null;
   return datos;
 }
+
 export async function crear(body) {
   validar(body); // 400
   const datos = normalizar(body);
   validarStock(datos.stock_total, datos.stock_disponible); // 400
-  if (await librosRepo.buscarPorIsbn(datos.isbn))
+  if (await repo.buscarPorIsbn(datos.isbn))
     throw conflicto('Ya existe un libro con ese ISBN'); // 409
   if (!(await categoriasRepo.buscarPorId(datos.categoria_id)))
     throw solicitudInvalida('La categoría no existe'); // 400
-  return librosRepo.crear(datos);
+  return repo.crear(datos);
 }
 export async function actualizar(id, body) {
   const actual = await obtener(id);
@@ -80,7 +79,7 @@ export async function actualizar(id, body) {
   if (
     datos.isbn &&
       datos.isbn !== actual.isbn &&
-    (await librosRepo.buscarPorIsbn(datos.isbn))
+    (await repo.buscarPorIsbn(datos.isbn))
   ) {
     throw conflicto('Ya existe un libro con ese ISBN');
   }
@@ -94,12 +93,13 @@ export async function actualizar(id, body) {
   validarStock(total, disponible);
   if (datos.stock_total !== undefined) datos.stock_total = total;
   if (datos.stock_disponible !== undefined) datos.stock_disponible = disponible;
-  return librosRepo.actualizar(id, datos);
+  return repo.actualizar(id, datos);
 }
+
 export async function eliminar(id) {
   const libro = await obtener(id);
   if (libro.stock_disponible < libro.stock_total) {
     throw conflicto('No se puede eliminar: el libro tiene ejemplares prestados');
   }
-  await librosRepo.eliminar(id);
+  await repo.eliminar(id);
 }

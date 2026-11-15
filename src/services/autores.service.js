@@ -3,12 +3,31 @@ import {noEncontrado, solicitudInvalida} from '../utils/http-error.js';
 const CAMPOS=['nombres', 'apellidos', 'nacionalidad'];
 const soloCampos = (d) =>Object.fromEntries(Object.entries(d).filter(([k])=>CAMPOS.includes(k)));
 
+// function validar(d, parcial = false){
+//     const errores = [];
+//     if((!parcial || d.nombres!==undefined) && !d.nombres?.trim())
+//         errores.push("El campo nombres es obligatorio");
+//     if((!parcial || d.apellidos!==undefined) && !d.apellidos?.trim())
+//         errores.push("El campo apellidos es obligatorio");
+// }
+
+
 function validar(d, parcial = false){
+    if (!d || typeof d !== 'object') {
+        throw solicitudInvalida('El cuerpo de la petición es inválido o está vacío');
+    }
+
     const errores = [];
-    if((!parcial || d.nombres!==undefined) && !d.nombres?.trim())
+    if((!parcial || d.nombres!==undefined) && !d.nombres?.trim()){
         errores.push("El campo nombres es obligatorio");
-    if((!parcial || d.apellidos!==undefined) && !d.apellidos?.trim())
+    }
+    if((!parcial || d.apellidos!==undefined) && !d.apellidos?.trim()){
         errores.push("El campo apellidos es obligatorio");
+    }
+     if (errores.length > 0) {
+        throw solicitudInvalida('Error de validación en los datos del autor', errores);
+    }
+
 }
 
 export const listar = (filtro) =>repo.listar(filtro);

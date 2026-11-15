@@ -1,39 +1,49 @@
-src/repositories/libros.repository.js
-// CAPA DE ACCESO A DATOS (repositorio)
-// Única capa que sabe DÓNDE están los datos. Hoy: array. Semana 3: MySQL.
-// Todas las funciones son async para que la firma no cambie con MySQL.
-import { libros } from '../data/datos.js';
-import { siguienteId } from '../utils/ids.js';
-export async function listar({ q, categoriaId } = {}) {
-  let r = libros;
-  if (q) r = r.filter((l) =>
-    l.titulo.toLowerCase().includes(q.toLowerCase()));
-  if (categoriaId) r = r.filter((l) =>
-    l.categoria_id === Number(categoriaId));
-  return structuredClone(r);              // copia: nadie modifica el array por fuera
+import {Op} from 'sequelize';
+import { Libro } from '../models/index.js';
+import { plano } from '../utils/plano.js';
+
+export async function listar({q}={}) {
+    const where = q ?{
+        [Op.or]:[
+            {isbn:{[Op.like]:`%${q}%`}},
+            {titulo:{[Op.like]:`%${q}%`}},
+        ]
+    }:{};
+
+    return(await Libro.findAll({where, order:[['anio','ASC']]})).map(plano)
 }
+
 export async function buscarPorId(id) {
-  const libro = libros.find((l) => l.id === id);
-  return libro ? structuredClone(libro) : null;
+  return plano(await Libro.findByPk(id));
 }
-export async function buscarPorIsbn(isbn) {
-  const libro = libros.find((l) => l.isbn === isbn);
-  return libro ? structuredClone(libro) : null;
+
+export async function buscarPorIsbn(campo, valor, excluirId = null) {
+    // Si el valor no está definido o es nulo, evitamos la consulta para que no falle Sequelize
+    if (valor === undefined || valor === null) {
+        return null; 
+    }
+
+    const where = { [campo]: valor };
+
+    // Si estás actualizando un registro, excluye su propio ID de la búsqueda
+    if (excluirId) {
+        where.id = { [Op.ne]: excluirId };
+    }
+
+    const registro = await Libro.findOne({ where });
+    return registro ? plano(registro) : null;
 }
+
 export async function crear(datos) {
-  const nuevo = { id: siguienteId(libros), ...datos };   // simula AUTO_INCREMENT
-  libros.push(nuevo);
-  return structuredClone(nuevo);
+  return plano(await Libro.create(datos));
 }
+
 export async function actualizar(id, datos) {
-  const libro = libros.find((l) => l.id === id);
-  if (!libro) return null;
-  Object.assign(libro, datos);
-  return structuredClone(libro);
+  const libro = await Libro.findByPk(id);
+  if(!libro) return null;
+  return plano(await libro.update(datos));
 }
+
 export async function eliminar(id) {
-  const i = libros.findIndex((l) => l.id === id);
-  if (i === -1) return false;
-  libros.splice(i, 1);
-  return true;
+  return (await Libro.destroy({where:{id}}))>0;
 }

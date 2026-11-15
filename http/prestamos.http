@@ -1,0 +1,38 @@
+@api=http://localhost:3000/api
+
+### 200 - Listar (ordenado)
+GET  {{api}}/prestamos
+
+### 200 - buscar por estado
+GET {{api}}/prestamos?q=activo
+
+### 200 - Obtener un Prestamo
+GET {{api}}/prestamos/1
+
+### 201 - Crear Prestamo
+# @name nuevoPrestamo
+POST {{api}}/prestamos
+Content-Type: application/json
+
+{
+    "socio_id":"2", 
+    "libro_id":"4", 
+    "fecha_prestamo":"2026-10-20", 
+    "fecha_limite":"2026-10-22", 
+    "fecha_devolucion":"2026-10-25", 
+    "estado":"Activo"
+}
+
+### 200 - Actualizar parcialmente el prestamo creado
+PUT {{api}}/prestamos/{{nuevoPrestamo.response.body.id}}
+Content-Type: application/json
+
+{
+    "libro_id":"4", 
+    "fecha_prestamo":"2026-10-18", 
+    "fecha_limite":"2026-10-25",
+    "fecha_devolucion":"2026-10-30"
+}
+
+### 204 - Eliminar el prestamo creado
+DELETE {{api}}/prestamos/{{nuevoPrestamo.response.body.id}}

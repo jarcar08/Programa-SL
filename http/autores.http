@@ -4,15 +4,16 @@
 GET  {{api}}/autores
 
 ### 200 - buscar por nombres o apellidos
-GET {{api}}/autores?q=mart
+GET {{api}}/autores?q=Ralph
 
 ### 200 - Obtener un autor
-GET {{ api }}/autores/1
+GET {{api}}/autores/8
 
-### 201 - Crear
+### 201 - Crear Autor
 # @name nuevoAutor
-POST {{ api }}/autores
+POST {{api}}/autores
 Content-Type: application/json
+
 {
     "nombres":"Kent",
     "apellidos": "Romero",
@@ -21,10 +22,11 @@ Content-Type: application/json
 
 ### 200 - Actualizar parcialmente el autor creado
 PUT {{api}}/autores/{{nuevoAutor.response.body.id}}
-Content-Type:  :application/json
+Content-Type: application/json
+
 {
     "nacionalidad":"Norteamericano"
 }
 
-### 200 - Eliminar el autor creado
+### 204 - Eliminar el autor creado
 DELETE {{api}}/autores/{{nuevoAutor.response.body.id}}

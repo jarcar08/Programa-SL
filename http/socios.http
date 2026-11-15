@@ -1,0 +1,35 @@
+@api=http://localhost:3000/api
+
+### 200 - Listar (ordenado)
+GET  {{api}}/socios
+
+### 200 - buscar por nombres o apellidos
+GET {{api}}/socios?q=Ana
+
+### 200 - Obtener un socio
+GET {{api}}/socios/1
+
+### 201 - Crear Socio
+# @name nuevoSocio
+POST {{api}}/socios
+Content-Type: application/json
+
+{
+    "dni": "00045712",
+    "nombres":"Rous",
+    "apellidos": "Romero",
+    "email":"rous.romero@gmail.com",
+    "tipo": "ADMINISTRATIVO"
+}
+
+### 200 - Actualizar parcialmente el socio creado
+PUT {{api}}/socios/{{nuevoSocio.response.body.id}}
+Content-Type: application/json
+
+{
+    "nombres":"Rousy",
+    "apellidos": "Romero Perez"
+}
+
+### 204 - Eliminar el socio creado
+DELETE {{api}}/socios/{{nuevoSocio.response.body.id}}

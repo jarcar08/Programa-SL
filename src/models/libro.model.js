@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
-
 export const Libro = sequelize.define(
     'Libro', 
     {
@@ -19,18 +18,25 @@ export const Libro = sequelize.define(
     titulo: {type:DataTypes.STRING(255), allowNull:true},
 
 
-anio:{
-    type:DataTypes.SMALLINT,
-    allowNull:false,
-    validate:{
-        msg:'El año es obligatorio'
-    },
-    IsInt: {
-        msg:'El año debe ser un numero entero'    
-    },
-  
+// anio:{
+//     type:DataTypes.SMALLINT,
+//     allowNull:false,
+//     validate:{
+//         msg:'El año es obligatorio'
+//     },
+//     IsInt: {
+//         msg:'El año debe ser un numero entero'    
+//     },
+// },
 
-},
+anio: {
+            type: DataTypes.SMALLINT,
+            allowNull: false,
+            validate: {
+                notNull: { msg: 'El año es obligatorio' },
+                isInt: { msg: 'El año debe ser un número entero' }
+            }
+        },
 
 categoria_id: {
     type:DataTypes.INTEGER,
